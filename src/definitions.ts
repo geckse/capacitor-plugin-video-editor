@@ -13,6 +13,7 @@ export interface EditOptions {
   path: string;
   trim?: TrimOptions;
   transcode?: TranscodeOptions;
+  overlay?: OverlayOptions;
 }
 
 export interface TrimOptions {
@@ -27,6 +28,15 @@ export interface TrimOptions {
 }
 
 export interface TranscodeOptions {
+  height?: number;
+  width?: number;
+  keepAspectRatio?: boolean;
+}
+
+export interface OverlayOptions {
+  path: string;
+  top?: number;
+  left?: number;
   height?: number;
   width?: number;
   keepAspectRatio?: boolean;

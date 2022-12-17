@@ -11,10 +11,13 @@ import UIKit
         outFile: URL,
         trimSettings: TrimSettings,
         transcodeSettings: TranscodeSettings,
+        overlaySettings: OverlaySettings,
         completionHandler: @escaping (URL) -> (),
         progressHandler: @escaping (Float) -> (),
         errorHandler: @escaping (String) -> ()
     ) {
+        print(srcFile);
+        
         let avAsset = AVURLAsset(url: srcFile, options: nil)
         let videoTrack = avAsset.tracks(withMediaType: AVMediaType.video).first!
         let transformedVideoSize = videoTrack.naturalSize.applying(videoTrack.preferredTransform)
@@ -36,6 +39,9 @@ import UIKit
         exporter.outputFileType = AVFileType.mp4
         exporter.outputURL = outFile
         exporter.timeRange = range
+        
+        // Overlay
+        exporter.overlay = overlaySettings;
         
         exporter.videoOutputConfiguration = [
             AVVideoWidthKey: NSNumber(integerLiteral: Int(targetVideoSize.width)),

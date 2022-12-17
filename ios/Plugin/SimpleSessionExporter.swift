@@ -21,6 +21,9 @@ open class SimpleSessionExporter: NSObject {
     public var optimizeForNetworkUse: Bool = false
     public var videoOutputConfiguration: [String : Any]?
     
+    public var overlay: OverlaySettings? = nil;
+    
+    
     /// Initializes a session with an asset to export.
     ///
     /// - Parameter asset: The asset to export.
@@ -110,15 +113,92 @@ extension SimpleSessionExporter {
         videoComposition.renderSize = videoSize
         videoComposition.frameDuration = CMTime(value: 1, timescale: 30)
         
+        
         let instruction = AVMutableVideoCompositionInstruction()
         instruction.timeRange = CMTimeRange(
             start: .zero,
             duration: composition.duration)
-        videoComposition.instructions = [instruction]
-        
+
         let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compositionTrack)
         layerInstruction.setTransform(asset.scaleTransform(scaleFactor: scale), at: CMTime.zero)
         
+        // overlay image
+        if let overlay {
+            
+            print(overlay.getPath());
+            
+            
+            let fileManager = FileManager.default
+            let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            do {
+                let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
+                print(fileURLs)
+            } catch {
+                print("Error while enumerating files \(documentsURL.path): \(error.localizedDescription)")
+            }
+
+            
+            /*var imageData = Data()
+            do {
+                imageData = try Data(contentsOf: overlay.getPath())
+                print(imageData);
+
+            } catch {
+                print(error)
+                completionHandler(.failed)
+                return
+            }*/
+            
+            let path = overlay.getPath()  // Pfad des Bildes
+            if fileManager.fileExists(atPath: path) {
+                // Bild existiert an diesem Pfad
+                print("overlay found");
+            } else {
+                print("overlay not found");
+                // Bild existiert nicht an diesem Pfad
+            }
+            let url = URL(fileURLWithPath: path)
+            
+            var data = Data();
+            do {
+                data = try Data(contentsOf: url)
+                print("found the data");
+            } catch {
+                print("no data found");
+            }
+            print(url.absoluteURL);
+            print(url.absoluteString);
+            guard let image = UIImage(data: data) else {
+                print("image data not found")
+                completionHandler(.failed)
+                return
+            }
+            print("Test");
+            print(image);
+            
+            let cgImage = image.cgImage;
+            
+            // layering
+            let imageLayer = CALayer()
+            imageLayer.contents = cgImage
+            imageLayer.frame = CGRect(x: 0, y: 0, width: videoSize.width, height: videoSize.height)
+            imageLayer.opacity = 1
+            
+            let parentLayer = CALayer()
+            let videoLayer = CALayer()
+            parentLayer.frame = CGRect(x: 0, y: 0, width: videoSize.width, height: videoSize.height)
+            videoLayer.frame = CGRect(x: 0, y: 0, width: videoSize.width, height: videoSize.height)
+            parentLayer.addSublayer(videoLayer)
+            parentLayer.addSublayer(imageLayer)
+            
+            // let layerComposition = AVMutableVideoComposition()
+            videoComposition.frameDuration = CMTime(value: 1, timescale: 30)
+            videoComposition.renderSize = videoSize
+            videoComposition.animationTool = AVVideoCompositionCoreAnimationTool(postProcessingAsVideoLayer: videoLayer, in: parentLayer)
+            
+        }
+
+        videoComposition.instructions = [instruction]
         instruction.layerInstructions = [layerInstruction]
         
         // Export

@@ -103,6 +103,7 @@ addListener(eventName: 'transcodeProgress', listenerFunc: (info: ProgressInfo) =
 | **`path`**      | <code>string</code>                                           |
 | **`trim`**      | <code><a href="#trimoptions">TrimOptions</a></code>           |
 | **`transcode`** | <code><a href="#transcodeoptions">TranscodeOptions</a></code> |
+| **`overlay`**   | <code><a href="#overlayoptions">OverlayOptions</a></code>     |
 
 
 #### TrimOptions
@@ -117,6 +118,18 @@ addListener(eventName: 'transcodeProgress', listenerFunc: (info: ProgressInfo) =
 
 | Prop                  | Type                 |
 | --------------------- | -------------------- |
+| **`height`**          | <code>number</code>  |
+| **`width`**           | <code>number</code>  |
+| **`keepAspectRatio`** | <code>boolean</code> |
+
+
+#### OverlayOptions
+
+| Prop                  | Type                 |
+| --------------------- | -------------------- |
+| **`path`**            | <code>string</code>  |
+| **`top`**             | <code>number</code>  |
+| **`left`**            | <code>number</code>  |
 | **`height`**          | <code>number</code>  |
 | **`width`**           | <code>number</code>  |
 | **`keepAspectRatio`** | <code>boolean</code> |

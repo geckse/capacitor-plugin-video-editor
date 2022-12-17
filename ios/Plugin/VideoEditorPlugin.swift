@@ -14,7 +14,8 @@ public class VideoEditorPlugin: CAPPlugin {
         let path = call.getString("path")?.replacingOccurrences(of: "file://", with: "");
         let trim = call.getObject("trim") ?? JSObject();
         let transcode = call.getObject("transcode") ?? JSObject();
-        
+        let overlay = call.getObject("overlay") ?? JSObject();
+
         if (path == nil) {
             call.reject("Input file path is required");
             return;
@@ -32,6 +33,17 @@ public class VideoEditorPlugin: CAPPlugin {
                 keepAspectRatio: (transcode["keepAspectRatio"] ?? true) as! Bool
             );
             
+            let overlayPath = String( describing: overlay["path"]!).replacingOccurrences(of: "file://", with: "");
+            
+            let overlaySettings = try OverlaySettings(
+                path: URL(fileURLWithPath: overlayPath),
+                top: 0,
+                left: 0,
+                height: (overlay["height"] ?? 0) as! Int,
+                width: (overlay["width"] ?? 0) as! Int,
+                keepAspectRatio: (overlay["keepAspectRatio"] ?? true) as! Bool
+            );
+            
             let outFile = self.getDestVideoUrl();
             
             DispatchQueue.main.async {
@@ -40,6 +52,7 @@ public class VideoEditorPlugin: CAPPlugin {
                     outFile: outFile,
                     trimSettings: trimSettings,
                     transcodeSettings: transcodeSettings,
+                    overlaySettings: overlaySettings,
                     completionHandler: { url in
                         call.resolve([
                             "file": self.createMediaFile(url: url),
