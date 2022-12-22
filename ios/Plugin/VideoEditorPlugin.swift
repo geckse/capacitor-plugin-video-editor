@@ -33,15 +33,16 @@ public class VideoEditorPlugin: CAPPlugin {
                 keepAspectRatio: (transcode["keepAspectRatio"] ?? true) as! Bool
             );
             
-            let overlayPath = String( describing: overlay["path"]!).replacingOccurrences(of: "file://", with: "");
+            let overlayPath = String( describing: overlay["path"] ?? "").replacingOccurrences(of: "file://", with: "");
             
             let overlaySettings = try OverlaySettings(
                 path: URL(fileURLWithPath: overlayPath),
-                top: 0,
-                left: 0,
+                top: (overlay["top"] ?? 0) as! Int,
+                left: (overlay["left"] ?? 0) as! Int,
                 height: (overlay["height"] ?? 0) as! Int,
                 width: (overlay["width"] ?? 0) as! Int,
-                keepAspectRatio: (overlay["keepAspectRatio"] ?? true) as! Bool
+                fillBehaviour: (overlay["fillBehaviour"] ?? "none") as! String,
+                opacity: (overlay["opacity"] ?? 0) as! Float
             );
             
             let outFile = self.getDestVideoUrl();

@@ -11,9 +11,10 @@ public class OverlaySettings: NSObject
     private var left: Int = 0;
     private var height: Int = 0;
     private var width: Int = 0;
-    private var keepAspectRatio: Bool = true;
+    private var fillBehaviour: String = "none";
+    private var opacity: Float = 1;
     
-    init(path: URL, top: Int, left: Int, height: Int, width: Int, keepAspectRatio: Bool) throws
+    init(path: URL, top: Int, left: Int, height: Int, width: Int, fillBehaviour: String, opacity: Float) throws
     {
         
         if (height < 0)
@@ -28,7 +29,10 @@ public class OverlaySettings: NSObject
         self.path = path;
         self.height = height;
         self.width = width;
-        self.keepAspectRatio = keepAspectRatio;
+        self.top = top;
+        self.left = left;
+        self.fillBehaviour = fillBehaviour;
+        self.opacity = opacity;
     }
     
     func getPath()->URL
@@ -64,13 +68,46 @@ public class OverlaySettings: NSObject
         self.width = width;
     }
     
-    func isKeepAspectRatio()->Bool
+    
+    func getTop()->Int
     {
-        return self.keepAspectRatio;
+        return self.top;
     }
     
-    func setKeepAspectRatio(_ keepAspectRatio: Bool)
+    func setTop(_ top: Int) throws
     {
-        self.keepAspectRatio = keepAspectRatio;
+        self.top = top;
     }
+
+    func getLeft()->Int
+    {
+        return self.left;
+    }
+    
+    func setLeft(_ left: Int) throws
+    {
+        self.left = left;
+    }
+
+    func getFillBehaviour()->String
+    {
+        return self.fillBehaviour;
+    }
+    
+    func setFillBehaviour(_ fill: String) throws
+    {
+        self.fillBehaviour = fill;
+    }
+    
+    
+    func getOpacity()->Float
+    {
+        return self.opacity;
+    }
+    
+    func setOpacity(_ opacity: Float) throws
+    {
+        self.opacity = opacity;
+    }
+    
 }

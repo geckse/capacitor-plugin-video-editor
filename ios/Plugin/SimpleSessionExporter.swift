@@ -123,71 +123,50 @@ extension SimpleSessionExporter {
         layerInstruction.setTransform(asset.scaleTransform(scaleFactor: scale), at: CMTime.zero)
         
         // overlay image
-        if let overlay {
+        if let overlay, overlay.getPath().absoluteString != "file:///"  {
             
-            print(overlay.getPath());
-            
-            
-            let fileManager = FileManager.default
-            let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0]
-            do {
-                let fileURLs = try fileManager.contentsOfDirectory(at: documentsURL, includingPropertiesForKeys: nil)
-                print(fileURLs)
-            } catch {
-                print("Error while enumerating files \(documentsURL.path): \(error.localizedDescription)")
-            }
-
-            
-            /*var imageData = Data()
-            do {
-                imageData = try Data(contentsOf: overlay.getPath())
-                print(imageData);
-
-            } catch {
-                print(error)
-                completionHandler(.failed)
-                return
-            }*/
-            
-            let path = overlay.getPath()  // Pfad des Bildes
-            if fileManager.fileExists(atPath: path) {
-                // Bild existiert an diesem Pfad
-                print("overlay found");
-            } else {
-                print("overlay not found");
-                // Bild existiert nicht an diesem Pfad
-            }
-            let url = URL(fileURLWithPath: path)
             
             var data = Data();
             do {
-                data = try Data(contentsOf: url)
+                data = try Data(contentsOf: overlay.getPath())
                 print("found the data");
             } catch {
                 print("no data found");
             }
-            print(url.absoluteURL);
-            print(url.absoluteString);
+            
             guard let image = UIImage(data: data) else {
                 print("image data not found")
                 completionHandler(.failed)
                 return
             }
-            print("Test");
-            print(image);
             
             let cgImage = image.cgImage;
             
             // layering
+            let parentLayer = CALayer()
+            parentLayer.frame = CGRect(x: 0, y: 0, width: videoSize.width, height: videoSize.height)
+            
+            // image layer
             let imageLayer = CALayer()
             imageLayer.contents = cgImage
-            imageLayer.frame = CGRect(x: 0, y: 0, width: videoSize.width, height: videoSize.height)
-            imageLayer.opacity = 1
+            if overlay.getFillBehaviour() != "none" {
+                imageLayer.frame = parentLayer.bounds
+                if overlay.getFillBehaviour() == "cover" {
+                    imageLayer.contentsGravity = CALayerContentsGravity.resizeAspect
+                }
+                if overlay.getFillBehaviour() == "contain" {
+                    imageLayer.contentsGravity = CALayerContentsGravity.resizeAspectFill
+                }
+                // todo other options from CALayerContentsGravity
+            } else {
+                imageLayer.frame = CGRect(x: overlay.getLeft(), y: overlay.getTop(), width: overlay.getWidth(), height: overlay.getHeight())
+            }
+            imageLayer.opacity = overlay.getOpacity()
             
-            let parentLayer = CALayer()
+            // video layer
             let videoLayer = CALayer()
-            parentLayer.frame = CGRect(x: 0, y: 0, width: videoSize.width, height: videoSize.height)
             videoLayer.frame = CGRect(x: 0, y: 0, width: videoSize.width, height: videoSize.height)
+            
             parentLayer.addSublayer(videoLayer)
             parentLayer.addSublayer(imageLayer)
             
@@ -204,7 +183,7 @@ extension SimpleSessionExporter {
         // Export
         guard let export = AVAssetExportSession(
             asset: composition,
-            presetName: AVAssetExportPresetMediumQuality)
+            presetName: AVAssetExportPresetHighestQuality)
         else {
             print("Cannot create export session.")
             completionHandler(.failed)
