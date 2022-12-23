@@ -39,7 +39,8 @@ export interface OverlayOptions {
   left?: number;
   height?: number;
   width?: number;
-  keepAspectRatio?: boolean;
+  fillBehaviour?: string; /* default:none, cover, contain */
+  opacity?: number;
 }
 
 export interface ThumbnailOptions {

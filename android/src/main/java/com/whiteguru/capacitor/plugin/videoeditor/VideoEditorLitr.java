@@ -2,6 +2,7 @@ package com.whiteguru.capacitor.plugin.videoeditor;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.PointF;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.MediaMetadataRetriever;
@@ -15,6 +16,9 @@ import com.linkedin.android.litr.MediaTransformer;
 import com.linkedin.android.litr.TransformationListener;
 import com.linkedin.android.litr.TransformationOptions;
 import com.linkedin.android.litr.analytics.TrackTransformationInfo;
+import com.linkedin.android.litr.filter.GlFilter;
+import com.linkedin.android.litr.filter.Transform;
+import com.linkedin.android.litr.filter.video.gl.BitmapOverlayFilter;
 import com.linkedin.android.litr.io.MediaRange;
 import com.whiteguru.capacitor.plugin.videoeditor.dto.SourceMedia;
 import com.whiteguru.capacitor.plugin.videoeditor.dto.VideoSize;
@@ -24,6 +28,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,7 +46,7 @@ public class VideoEditorLitr {
         return (long) (0.07F * 2 * width * height * frameRate);
     }
 
-    public void edit(Context context, File srcFile, File outFile, TrimSettings trimSettings, TranscodeSettings transcodeSettings, TransformationListener videoTransformationListener) throws IOException {
+    public void edit(Context context, File srcFile, File outFile, TrimSettings trimSettings, TranscodeSettings transcodeSettings, OverlaySettings overlaySettings,TransformationListener videoTransformationListener) throws IOException {
         MediaTransformer mediaTransformer = new MediaTransformer(context);
 
         String requestId = UUID.randomUUID().toString();
@@ -63,10 +68,24 @@ public class VideoEditorLitr {
         long startsAtUs = trimSettings.getStartsAt() * 1000;
         long endsAtUs = trimSettings.getEndsAt() == 0 ? Long.MAX_VALUE : trimSettings.getEndsAt() * 1000;
 
-        TransformationOptions transformationOptions = new TransformationOptions.Builder()
+        TransformationOptions.Builder transformationOptionsBuild = new TransformationOptions.Builder()
                 .setGranularity(MediaTransformer.GRANULARITY_DEFAULT)
-                .setSourceMediaRange(new MediaRange(startsAtUs, endsAtUs))
-                .build();
+                .setSourceMediaRange(new MediaRange(startsAtUs, endsAtUs));
+
+        // Video Filters
+        List<GlFilter> videoFilterList = new ArrayList<GlFilter>();
+
+        // VideoFilter: Overlay
+        if(!overlaySettings.getPath().equals("")){
+          Uri overlayUri = Uri.parse(overlaySettings.getPath());
+          Transform transform = new Transform(new PointF(1,1), new PointF(0.5f,0.5f), 0);
+          GlFilter overlayFilter = new BitmapOverlayFilter(context.getApplicationContext(), overlayUri, transform);
+          videoFilterList.add(overlayFilter);
+        }
+
+        // build the op
+        if(!videoFilterList.isEmpty()) transformationOptionsBuild.setVideoFilters(videoFilterList);
+        TransformationOptions transformationOptions = transformationOptionsBuild.build();
 
         // Video codec config
         MediaFormat targetVideoFormat = new MediaFormat();
