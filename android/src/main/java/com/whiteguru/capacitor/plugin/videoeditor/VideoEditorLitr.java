@@ -7,6 +7,7 @@ import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -75,12 +76,43 @@ public class VideoEditorLitr {
         // Video Filters
         List<GlFilter> videoFilterList = new ArrayList<GlFilter>();
 
-        // VideoFilter: Overlay
+        Logger.debug("Overlay video : ");
+
+      // VideoFilter: Overlay
         if(!overlaySettings.getPath().equals("")){
           Uri overlayUri = Uri.parse(overlaySettings.getPath());
-          Transform transform = new Transform(new PointF(1,1), new PointF(0.5f,0.5f), 0);
+
+          float overlaySizeDiffX = 1.0f;
+          float overlaySizeDiffY = 1.0f;
+          float posX = 0.5f; // center
+          float posY = 0.5f; // center
+
+          Logger.debug("Overlay video T: " + String.valueOf(posX) + " L: " + String.valueOf(posY));
+
+
+          if(overlaySettings.getFillBehaviour().equals("cover")) {
+            overlaySizeDiffX = (float) transcodeSettings.getWidth() / (float) overlaySettings.getWidth();
+            overlaySizeDiffY = (float) transcodeSettings.getHeight() / (float) overlaySettings.getHeight();
+
+          } else if(overlaySettings.getFillBehaviour().equals("contain")) {
+            // default values
+          } else if(overlaySettings.getFillBehaviour().equals("none")) {
+            overlaySizeDiffX = (float) transcodeSettings.getWidth() / (float) overlaySettings.getWidth();
+            overlaySizeDiffY = (float) transcodeSettings.getHeight() / (float) overlaySettings.getHeight();
+            posX = (float) overlaySettings.getLeft() / (float) transcodeSettings.getWidth();
+            posY = (float) overlaySettings.getTop() / (float) transcodeSettings.getHeight();
+
+          } else {
+            throw new IOException("overlay fill behavior not supported");
+          }
+
+          Logger.debug("Overlay video X: " + overlaySizeDiffX + " Y: " + overlaySizeDiffY);
+          Logger.debug("Overlay video T: " + String.valueOf(posX) + " L: " + String.valueOf(posY));
+
+          Transform transform = new Transform(new PointF(overlaySizeDiffY, overlaySizeDiffX), new PointF(posX, posY), 0);
           GlFilter overlayFilter = new BitmapOverlayFilter(context.getApplicationContext(), overlayUri, transform);
           videoFilterList.add(overlayFilter);
+
         }
 
         // build the op

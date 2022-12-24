@@ -8,12 +8,12 @@ public class OverlaySettings {
     private int height = 0;
     private int width = 0;
     private String fillBehaviour = "none";
-    private float opacity = 1.0f;
+    private double opacity = 1.0f;
 
     public OverlaySettings() {
     }
 
-    public OverlaySettings(String path, int top, int left, int height, int width, String fillBehaviour, float opacity) {
+    public OverlaySettings(String path, int top, int left, int height, int width, String fillBehaviour, double opacity) {
         if (height < 0) {
             throw new IllegalArgumentException("Parameter height cannot be negative");
         }
@@ -78,7 +78,7 @@ public class OverlaySettings {
       this.fillBehaviour = fillBehaviour;
     }
 
-    public float getOpacity() {
+    public double getOpacity() {
       return opacity;
     }
     public void setOpacity(float opacity) {

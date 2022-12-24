@@ -53,6 +53,7 @@ public class VideoEditorPlugin extends Plugin {
         String path = call.getString("path");
         JSObject trim = call.getObject("trim", new JSObject());
         JSObject transcode = call.getObject("transcode", new JSObject());
+        JSObject overlay = call.getObject("overlay", new JSObject());
 
         if (path == null) {
             call.reject("Input file path is required");
@@ -86,6 +87,18 @@ public class VideoEditorPlugin extends Plugin {
                                     transcode.getInteger("width", 0),
                                     transcode.getBoolean("keepAspectRatio", true)
                             );
+
+                            Logger.debug("FUCKER" + overlay.getString("fillBehaviour", "none"));
+
+                            OverlaySettings overlaySettings = new OverlaySettings(
+                              overlay.getString("path", ""),
+                              overlay.getInteger("top", 0),
+                              overlay.getInteger("left", 0),
+                              overlay.getInteger("height", 0),
+                              overlay.getInteger("width", 0),
+                              overlay.getString("fillBehaviour", "none"),
+                              1
+                              ); // TODO Figure doubles out?
 
                             TransformationListener videoTransformationListener = new TransformationListener() {
                                 @Override
@@ -127,7 +140,7 @@ public class VideoEditorPlugin extends Plugin {
                                 }
                             };
 
-                            implementation.edit(getContext(), inputFile, outputFile, trimSettings, transcodeSettings, videoTransformationListener);
+                            implementation.edit(getContext(), inputFile, outputFile, trimSettings, transcodeSettings, overlaySettings,videoTransformationListener);
                         } catch (IOException e) {
                             call.reject(e.getMessage());
                         }
