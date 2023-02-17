@@ -120,8 +120,11 @@ extension SimpleSessionExporter {
             duration: composition.duration)
 
         let layerInstruction = AVMutableVideoCompositionLayerInstruction(assetTrack: compositionTrack)
-        layerInstruction.setTransform(asset.scaleTransform(scaleFactor: scale), at: CMTime.zero)
-        
+        /* layerInstruction.setTransform(asset.scaleTransform(scaleFactor: scale), at: CMTime.zero)*/
+        // TODO: maybe the scaling is important for proper downscaling, need to test that
+        let transform = asset.preferredTransform.concatenating(assetTrack.preferredTransform)
+        layerInstruction.setTransform(transform, at: CMTime.zero)
+
         // overlay image
         if let overlay, overlay.getPath().absoluteString != "file:///"  {
             
