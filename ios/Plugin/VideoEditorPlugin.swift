@@ -42,7 +42,7 @@ public class VideoEditorPlugin: CAPPlugin {
                 height: (overlay["height"] ?? 0) as! Int,
                 width: (overlay["width"] ?? 0) as! Int,
                 fillBehaviour: (overlay["fillBehaviour"] ?? "none") as! String,
-                opacity: (overlay["opacity"] ?? 0) as! Float
+                opacity: (overlay["opacity"] as? Float) ?? 0
             );
             
             let outFile = self.getDestVideoUrl();
